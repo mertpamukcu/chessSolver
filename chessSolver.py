@@ -404,24 +404,44 @@ def main():
     Starts recursive method (find_place) in order to do its work,
     does time tracking and other eye candy things.
     """
-
     time_start = time.time()
-    for i in range(0, X_SIZE * Y_SIZE):
-        start_table.append(0)
+    good_config = True
 
-    #recursiv
-    find_place(start_table, STARTING_PIECES, 0)
+    total_pieces = 0
+    oneD_table_size = X_SIZE * Y_SIZE
 
-    print "Latest 3 tables:"
-    for i in successful_tables[:3]:
-        print render_table(i)
+    for i in STARTING_PIECES:
+        total_pieces += i[1]
+        if not i[0] in (ROOK,KNIGHT,BISHOP,KING,QUEEN):
+            print "Wrong piece type: " + str(i[0])
+            good_config = False
 
-    print "Total possibilities:"
-    print len(successful_tables)
+    if oneD_table_size < total_pieces:
+        print "Not enough tiles for all pieces."
+        good_config = False
 
-    print "Time in seconds:"
-    time_end = time.time()
-    print time_end - time_start
+    if not good_config:
+        print "Configuration Error"
+    else:
+        for i in range(0, oneD_table_size):
+            start_table.append(0)
+
+        #recursiv
+        find_place(start_table, STARTING_PIECES, 0)
+
+        if len(successful_tables) > 0:
+            print "Latest 3 tables:"
+            for i in successful_tables[:3]:
+                print render_table(i)
+
+            print "Total possibilities:"
+            print len(successful_tables)
+
+            print "Time in seconds:"
+            time_end = time.time()
+            print time_end - time_start
+        else:
+            print "Couldn't Found any combination"
 
 
 if __name__ == '__main__':
