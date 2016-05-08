@@ -1,12 +1,30 @@
+"""
+ChessPiece.py
+
+Created to hold ChessPiece object.
+
+Developed for try-catch challenge
+Mert Pamukcu, 2016
+"""
+
 from modules.ChessModel import ChessModel
 
 class ChessPiece(ChessModel):
+    """
+    Used for every chess piece in tables.
+    Has functions for calculating potential moves an threats,
+    and rendering of itself.
+    """
     type = ChessModel.ROOK
 
     def __init__(self, type):
         self.type = type
 
-    def render(self):
+    def render_piece(self):
+        """
+        Returns character representation of pieces.
+        For visual needs.
+        """
         if self.type == self.ROOK:
             return "R"
 
@@ -45,9 +63,11 @@ class ChessPiece(ChessModel):
             table2d = self.bishop_danger_zones(table, origin_x, origin_y)
 
         elif piece == self.QUEEN:
-            table2d = self.bishop_danger_zones(table, origin_x, origin_y)
-            if table2d:
-                table2d = self.rook_danger_zones(table, origin_x, origin_y)
+            temp_table = self.bishop_danger_zones(table, origin_x, origin_y)
+            if temp_table:
+                table2d = self.rook_danger_zones(temp_table, origin_x, origin_y)
+            else:
+                table2d = False
 
         elif piece == self.KING:
             table2d = self.king_danger_zones(table, origin_x, origin_y)
@@ -81,10 +101,10 @@ class ChessPiece(ChessModel):
                     target_x = origin_x + x_pos
                     target_y = origin_y + y_pos
 
-                    if not (origin_x == target_x and origin_y == target_y): #dont try to eat yourself
-                        if target_y in range_y and target_x in range_x:
-                            if table2d[target_x][target_y] in (self.SAFE_ZONE, DANGER_ZONE):
-                                table2d[target_x][target_y] = DANGER_ZONE
+                    if not (origin_x == target_x and origin_y == target_y):
+                        if target_y in table.range_y and target_x in table.range_x:
+                            if table2d[target_x][target_y] in (self.SAFE_ZONE, self.DANGER_ZONE):
+                                table2d[target_x][target_y] = self.DANGER_ZONE
                             else:
                                 return False
 
@@ -104,14 +124,18 @@ class ChessPiece(ChessModel):
 
         for target_x in range(0, table.x_size):
             if target_x != origin_x:
-                if table2d[target_x][origin_y] == self.SAFE_ZONE or table2d[target_x][origin_y] == self.DANGER_ZONE:
+                if table2d[target_x][origin_y] == self.SAFE_ZONE or \
+                    table2d[target_x][origin_y] == self.DANGER_ZONE:
+
                     table2d[target_x][origin_y] = self.DANGER_ZONE
                 else:
                     return False
 
         for target_y in range(0, table.y_size):
             if target_y != origin_y:
-                if table2d[origin_x][target_y] == self.SAFE_ZONE or table2d[origin_x][target_y] == self.DANGER_ZONE:
+                if table2d[origin_x][target_y] == self.SAFE_ZONE or \
+                    table2d[origin_x][target_y] == self.DANGER_ZONE:
+
                     table2d[origin_x][target_y] = self.DANGER_ZONE
                 else:
                     return False
@@ -137,7 +161,7 @@ class ChessPiece(ChessModel):
                 target_x = origin_x + x_pos
 
                 if not (origin_x == target_x and origin_y == target_y): #because its like suicide
-                    if target_y in range_y and target_x in range_x:
+                    if target_y in table.range_y and target_x in table.range_x:
                         if table2d[target_x][target_y] in (self.SAFE_ZONE, self.DANGER_ZONE):
                             table2d[target_x][target_y] = self.DANGER_ZONE
                         else:

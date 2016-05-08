@@ -1,8 +1,16 @@
+"""
+ChessTable.py
+
+Acts as a chess table, Responsive for finding out all unique
+combinations of selected pieces.
+
+Developed for try-catch challenge
+Mert Pamukcu, 2016
+"""
+
 import copy
 
 from modules.ChessModel import ChessModel
-from modules.ChessPiece import ChessPiece
-
 from modules.list_permutations import perm_unique
 
 class ChessTable(ChessModel):
@@ -12,13 +20,8 @@ class ChessTable(ChessModel):
     Attributes:
         starting_pieces: pieces to put on the table
     """
-
-    start_table = []
     successful_tables = []
 
-    starting_pieces = []
-
-    oneD_table_size = 4
     x_size = 2
     y_size = 2
 
@@ -28,15 +31,20 @@ class ChessTable(ChessModel):
     combination_cache = {}
     combination_cache_index = set()
 
-    def __init__(self,starting_pieces = []):
+    def __init__(self, starting_pieces=None):
+        self.start_table = []
         self.starting_pieces = starting_pieces
 
     def prepare(self):
+        """
+        Prepares object by creating table variable (List)
+        and calculating table size
+        """
         self.range_x = range(0, self.x_size)
         self.range_y = range(0, self.y_size)
-        self.oneD_table_size = self.x_size * self.y_size
+        one_dimensional_table_size = self.x_size * self.y_size
 
-        for i in range(0, self.oneD_table_size):
+        for _ in range(0, one_dimensional_table_size):
             self.start_table.append(0)
 
     def get_2d_table(self):
@@ -54,12 +62,12 @@ class ChessTable(ChessModel):
 
         return table2d
 
-    def convert_2d_to_1d(self,table2d):
+    def convert_2d_to_1d(self, table2d):
         """
         Takes a 2D List and converts it to one dimentional List.
 
         Args:
-            table2d (List): Source chess table list to be converted.
+            table2d (List): Source chess table to be converted.
         """
 
         index1d = 0
@@ -70,7 +78,10 @@ class ChessTable(ChessModel):
                 index1d += 1
         return table1d
 
-    def get_2d_index(self,line):
+    def get_2d_index(self, line):
+        """
+        returns 2d coordinates of an index
+        """
         index1d = 0
         for x_pos in range(0, self.x_size):
             for y_pos in range(0, self.y_size):
@@ -81,6 +92,10 @@ class ChessTable(ChessModel):
                 index1d += 1
 
     def solve(self):
+        """
+        Returns all possible chess tables
+        """
+        self.successful_tables = []
         self.find_place(self, self.starting_pieces, 0)
         return self.successful_tables
 
@@ -96,13 +111,16 @@ class ChessTable(ChessModel):
             pieces: List of pieces waiting to be positioned on table.
             line (int): for determining kind of piece to position in current step.
         """
+        temp_table = ChessTable()
+        temp_table.x_size = self.x_size
+        temp_table.y_size = self.y_size
+        temp_table.start_table = copy.copy(table.start_table)
 
-        temp_table = copy.copy(table.start_table)
         piece_count = pieces[line][1]
 
         #make a smaller table, just empty tiles
         empty_tiles_table = []
-        for tile in temp_table:
+        for tile in temp_table.start_table:
             if tile == 0:
                 empty_tiles_table.append(0)
 
@@ -115,7 +133,11 @@ class ChessTable(ChessModel):
             #it means table dont have any more rooms for remaining pieces.
             good_table = False
 
-        table_for_start_of_round = copy.copy(table)
+        table_for_start_of_round = ChessTable()
+        table_for_start_of_round.x_size = self.x_size
+        table_for_start_of_round.y_size = self.y_size
+        table_for_start_of_round.start_table = copy.copy(table.start_table)
+
         if str(empty_tiles_table) in self.combination_cache_index:
             combinations_for_piece = self.combination_cache[str(empty_tiles_table)]
         else:
@@ -160,7 +182,8 @@ class ChessTable(ChessModel):
         Args:
             table (List): Latest status of table
             table_for_start_of_round (List): Table without any pieces from current kind.
-            combination (List): Contains potential position for current kind of pieces in empty tiles.
+            combination (List): Contains potential position for current kind
+                of pieces in empty tiles.
             line (int): for passing to calculate_for_piece method.
         """
         successful, table_for_this_round = self.calculate_for_piece(
@@ -191,42 +214,43 @@ class ChessTable(ChessModel):
         Args:
             table (List): Latest status of table
             table_for_start_of_round (List): Table without any pieces from current kind.
-            combination (List): Contains potential position for current kind of pieces in empty tiles.
+            combination (List): Contains potential position for current kind
+                of pieces in empty tiles.
             line (int): for determining current piece in combination.
         """
-        table_for_this_round = ChessTable()
-        table_for_this_round.start_table = copy.copy(table.start_table)
-        table_for_this_round.x_size = self.x_size
-        table_for_this_round.y_size = self.y_size
-        table_for_this_round.prepare()
+        temp_table = ChessTable() #table just for this round
+        temp_table.start_table = copy.copy(table.start_table)
+        temp_table.x_size = self.x_size
+        temp_table.y_size = self.y_size
+        temp_table.prepare()
 
         successful = True
 
         for k, value in enumerate(combination):
             empty_row_in_main_table = self.find_empty_row_in_table(table_for_start_of_round, k)
 
-            if (table_for_this_round.start_table[empty_row_in_main_table] == 0
+            if (temp_table.start_table[empty_row_in_main_table] == 0
                     and value > 0
                     and empty_row_in_main_table > -1):
 
-                table_for_this_round.start_table[empty_row_in_main_table] = self.starting_pieces[line][0]
+                temp_table.start_table[empty_row_in_main_table] = self.starting_pieces[line][0]
 
                 #calculates threat squares
                 piece = self.starting_pieces[line][0]
                 danger_zoned_table = piece.fill_danger_zones(
-                    table_for_this_round,
+                    temp_table,
                     empty_row_in_main_table
                 )
                 #and returns False if a piece is already threated by it
                 if not danger_zoned_table:
                     successful = False
                 else:
-                    table_for_this_round = danger_zoned_table
+                    temp_table = danger_zoned_table
 
             elif value > 0 or not empty_row_in_main_table > -1:
                 successful = False
 
-        return successful, table_for_this_round
+        return successful, temp_table
 
     def render_table(self):
         """
@@ -250,7 +274,7 @@ class ChessTable(ChessModel):
                     table[x_pos][y_pos] = "."
 
                 elif table[x_pos][y_pos].__class__.__name__ == "ChessPiece":
-                    table[x_pos][y_pos] = table[x_pos][y_pos].render()
+                    table[x_pos][y_pos] = table[x_pos][y_pos].render_piece()
 
                 drawline += "|" + str(table[x_pos][y_pos]) + ""
             drawline += "\n"
