@@ -1,6 +1,8 @@
 import copy
 
 from modules.ChessModel import ChessModel
+from modules.ChessPiece import ChessPiece
+
 from modules.list_permutations import perm_unique
 
 class ChessTable(ChessModel):
@@ -26,7 +28,7 @@ class ChessTable(ChessModel):
     combination_cache = {}
     combination_cache_index = set()
 
-    def __init__(self,starting_pieces):
+    def __init__(self,starting_pieces = []):
         self.starting_pieces = starting_pieces
 
     def prepare(self):
@@ -37,8 +39,49 @@ class ChessTable(ChessModel):
         for i in range(0, self.oneD_table_size):
             self.start_table.append(0)
 
+    def get_2d_table(self):
+        """
+        Returns a 2D List of current start_table.
+        """
+
+        table2d = [[0 for x_pos in range(self.x_size)] for y_pos in range(self.y_size)]
+        index1d = 0
+        for x_pos in range(0, self.x_size):
+            for y_pos in range(0, self.y_size):
+                if self.start_table[index1d] != 0:
+                    table2d[x_pos][y_pos] = self.start_table[index1d]
+                index1d += 1
+
+        return table2d
+
+    def convert_2d_to_1d(self,table2d):
+        """
+        Takes a 2D List and converts it to one dimentional List.
+
+        Args:
+            table2d (List): Source chess table list to be converted.
+        """
+
+        index1d = 0
+        table1d = []
+        for x_pos in range(0, self.x_size):
+            for y_pos in range(0, self.y_size):
+                table1d.append(table2d[x_pos][y_pos])
+                index1d += 1
+        return table1d
+
+    def get_2d_index(self,line):
+        index1d = 0
+        for x_pos in range(0, self.x_size):
+            for y_pos in range(0, self.y_size):
+                if index1d == line:
+                    origin_x = x_pos
+                    origin_y = y_pos
+                    return origin_x, origin_y
+                index1d += 1
+
     def solve(self):
-        self.find_place(self.start_table, self.starting_pieces, 0)
+        self.find_place(self, self.starting_pieces, 0)
         return self.successful_tables
 
     def find_place(self, table, pieces, line):
@@ -54,7 +97,7 @@ class ChessTable(ChessModel):
             line (int): for determining kind of piece to position in current step.
         """
 
-        temp_table = copy.copy(table)
+        temp_table = copy.copy(table.start_table)
         piece_count = pieces[line][1]
 
         #make a smaller table, just empty tiles
@@ -96,8 +139,8 @@ class ChessTable(ChessModel):
 
         i = 0
         column = 0
-        while i < len(table):
-            if table[i] == self.SAFE_ZONE:
+        while i < len(table.start_table):
+            if table.start_table[i] == self.SAFE_ZONE:
                 if column == line:
                     return i
                 else:
@@ -151,22 +194,27 @@ class ChessTable(ChessModel):
             combination (List): Contains potential position for current kind of pieces in empty tiles.
             line (int): for determining current piece in combination.
         """
-        table_for_this_round = copy.copy(table)
+        table_for_this_round = ChessTable()
+        table_for_this_round.start_table = copy.copy(table.start_table)
+        table_for_this_round.x_size = self.x_size
+        table_for_this_round.y_size = self.y_size
+        table_for_this_round.prepare()
+
         successful = True
 
         for k, value in enumerate(combination):
             empty_row_in_main_table = self.find_empty_row_in_table(table_for_start_of_round, k)
 
-            if (table_for_this_round[empty_row_in_main_table] == 0
+            if (table_for_this_round.start_table[empty_row_in_main_table] == 0
                     and value > 0
                     and empty_row_in_main_table > -1):
 
-                table_for_this_round[empty_row_in_main_table] = self.starting_pieces[line][0]
+                table_for_this_round.start_table[empty_row_in_main_table] = self.starting_pieces[line][0]
 
                 #calculates threat squares
-                danger_zoned_table = self.fill_danger_zones(
+                piece = self.starting_pieces[line][0]
+                danger_zoned_table = piece.fill_danger_zones(
                     table_for_this_round,
-                    self.starting_pieces[line][0],
                     empty_row_in_main_table
                 )
                 #and returns False if a piece is already threated by it
@@ -180,14 +228,11 @@ class ChessTable(ChessModel):
 
         return successful, table_for_this_round
 
-    def render_table(self, table1d):
+    def render_table(self):
         """
-        Converts a list to 2D and returns a string looks a like chessboard.
-
-        Args:
-            table1d (List): one dimensional chess table.
-
+        Returns current start_table as chessboard like ascii art.
         """
+        table1d = self.start_table
         drawline = ""
         table = [[0 for x_pos in range(self.x_size)] for y_pos in range(self.y_size)]
         index1d = 0
@@ -201,23 +246,11 @@ class ChessTable(ChessModel):
                 if table[x_pos][y_pos] == self.SAFE_ZONE:
                     table[x_pos][y_pos] = "."
 
-                if table[x_pos][y_pos] == self.DANGER_ZONE:
+                elif table[x_pos][y_pos] == self.DANGER_ZONE:
                     table[x_pos][y_pos] = "."
 
-                if table[x_pos][y_pos] == self.ROOK:
-                    table[x_pos][y_pos] = "R"
-
-                if table[x_pos][y_pos] == self.KING:
-                    table[x_pos][y_pos] = "K"
-
-                if table[x_pos][y_pos] == self.KNIGHT:
-                    table[x_pos][y_pos] = "N"
-
-                if table[x_pos][y_pos] == self.BISHOP:
-                    table[x_pos][y_pos] = "B"
-
-                if table[x_pos][y_pos] == self.QUEEN:
-                    table[x_pos][y_pos] = "Q"
+                elif table[x_pos][y_pos].__class__.__name__ == "ChessPiece":
+                    table[x_pos][y_pos] = table[x_pos][y_pos].render()
 
                 drawline += "|" + str(table[x_pos][y_pos]) + ""
             drawline += "\n"
