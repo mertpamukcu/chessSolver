@@ -16,8 +16,9 @@ Please set these values for configuration;
 Developed for try-catch challenge
 Mert Pamukcu, 2016
 """
-import copy
 import time
+import argparse
+import sys
 
 from modules.ChessModel import ChessModel
 from modules.ChessTable import ChessTable
@@ -29,25 +30,62 @@ def main():
     Starts recursive method (find_place) in order to do its work,
     does time tracking and other eye candy things.
     """
+    parser = argparse.ArgumentParser(description="""Finds all unique
+    configurations of a set of normal chess pieces on a chess board
+    """)
+
+    parser.add_argument("x", help="number of columns in chess table", type=int)
+    parser.add_argument("y", help="number of rows in chess table", type=int)
+
+    parser.add_argument('--king', type=int,
+                   help='Number of kings in configurations')
+    parser.add_argument('--queen', type=int,
+                   help='Number of queens in configurations')
+    parser.add_argument('--rook', type=int,
+                   help='Number of rooks in configurations')
+    parser.add_argument('--knight', type=int,
+                   help='Number of knights in configurations')
+    parser.add_argument('--bishop', type=int,
+                   help='Number of bishops in configurations')
+
+
+    args = parser.parse_args()
+
     time_start = time.time()
     good_config = True
     total_pieces = 0
 
-    X_SIZE = 4
-    Y_SIZE = 4
-    STARTING_PIECES = [[ChessPiece(ChessModel.ROOK), 2], [ChessPiece(ChessModel.KNIGHT),4]]
+    X_SIZE = args.x
+    Y_SIZE = args.y
+    starting_pieces = []
 
-    table = ChessTable(STARTING_PIECES)
+    if(args.king):
+        starting_pieces.append([ChessPiece(ChessModel.KING), args.king])
+    if(args.queen):
+        starting_pieces.append([ChessPiece(ChessModel.QUEEN), args.queen])
+    if(args.rook):
+        starting_pieces.append([ChessPiece(ChessModel.ROOK), args.rook])
+    if(args.knight):
+        starting_pieces.append([ChessPiece(ChessModel.KNIGHT), args.knight])
+    if(args.bishop):
+        starting_pieces.append([ChessPiece(ChessModel.BISHOP), args.bishop])
+
+
+    table = ChessTable(starting_pieces)
     table.x_size = X_SIZE
     table.y_size = Y_SIZE
     table.prepare()
+
+    if len(starting_pieces) == 0:
+        print "You need to add at least one type of chess piece"
+        good_config = False
 
     if table.oneD_table_size < total_pieces:
         print "Not enough tiles for all pieces."
         good_config = False
 
     if not good_config:
-        print "Configuration Error"
+        parser.print_usage()
     else:
         #recursiv
         successful_tables = table.solve()
