@@ -9,17 +9,9 @@ As output, the program should list all the unique configurations to the console 
 When returning your solution, please provide with your answer the total number of unique configurations for a 7×7 board with 2 Kings, 2 Queens, 2 Bishops and 1 Knight. Also provide the time it took.
 
 ## Install
-To configure dimensions and pieces, please edit these constants in *chessSolver.py* like the example below
-
-```python
-STARTING_PIECES = [[ROOK, 2], [KNIGHT, 4]]
-X_SIZE = 7 #set for table x size
-Y_SIZE = 7 #set for table y size
-```
-
 To start , in terminal run;
 ```
-python chessSolver.py
+python chessSolver.py 7 7 --king=2 --queen=2 --bishop=2 --knight=1
 ```
 
 ## Example solutions
@@ -58,11 +50,11 @@ Latest 3 tables:
 |.|.|.|.|.|.|.
 |.|.|.|.|.|.|.
 
-|K|.|K|.|.|.|B
+|K|.|K|.|.|.|.
 |.|.|.|.|Q|.|.
 |.|Q|.|.|.|.|.
 |.|.|.|.|.|.|.
-|B|.|.|.|.|.|N
+|B|.|B|.|.|N|.
 |.|.|.|.|.|.|.
 |.|.|.|.|.|.|.
 
@@ -70,12 +62,12 @@ Latest 3 tables:
 |.|.|.|.|Q|.|.
 |.|Q|.|.|.|.|.
 |.|.|.|.|.|.|.
-|B|.|.|.|.|.|.
-|.|.|.|N|.|.|.
+|.|.|.|.|.|N|.
+|.|.|B|.|.|.|.
 |.|.|.|.|.|.|.
 
 Total possibilities:
 3063828
 Time in seconds:
-1287.4434792995453
+1921.78499985
 ```
