@@ -47,6 +47,9 @@ def main():
                    help='Number of knights in configurations')
     parser.add_argument('--bishop', type=int,
                    help='Number of bishops in configurations')
+    parser.add_argument('--render', type=int, default=3,
+                   help='Number of tables to render, default = 3')
+
 
 
     args = parser.parse_args()
@@ -58,6 +61,7 @@ def main():
     X_SIZE = args.x
     Y_SIZE = args.y
     starting_pieces = []
+
 
     if(args.king):
         starting_pieces.append([ChessPiece(ChessModel.KING), args.king])
@@ -92,7 +96,7 @@ def main():
 
         if len(successful_tables) > 0:
             print "Latest 3 tables:"
-            for i in successful_tables[:3]:
+            for i in successful_tables[:args.render]:
                 print i.render_table()
 
             print "Total possibilities:"
