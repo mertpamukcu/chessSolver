@@ -79,11 +79,11 @@ def main():
 
     good_config = True
     if len(starting_pieces) == 0:
-        print "You need to add at least one type of chess piece"
+        print("You need to add at least one type of chess piece")
         good_config = False
 
     if args.x * args.y < total_pieces:
-        print "Not enough tiles for all pieces."
+        print("Not enough tiles for all pieces.")
         good_config = False
 
     if not good_config:
@@ -95,18 +95,18 @@ def main():
     successful_tables = table.solve()
 
     if len(successful_tables) > 0:
-        print "Latest 3 tables:"
+        print("Latest 3 tables:")
         for i in successful_tables[:args.render]:
-            print i.render_table()
+            print(i.render_table())
 
-        print "Total possibilities:"
-        print len(successful_tables)
+        print("Total possibilities:")
+        print(len(successful_tables))
 
-        print "Time in seconds:"
+        print("Time in seconds:")
         time_end = time.time()
-        print time_end - time_start
+        print(time_end - time_start)
     else:
-        print "Couldn't Found any combination"
+        print("Couldn't Found any combination")
 
 
 if __name__ == '__main__':
