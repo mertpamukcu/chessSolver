@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """
-chesssolver.py
+chesssolver.py - changed something
 
 Finds all unique configurations of a set of normal chess pieces
 on a chess board with dimensions MxN where none of the pieces is
